@@ -1,30 +1,78 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:13
-    environment:
-      POSTGRES_DB: hrms
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  auth:
+  # Auth Service
+  auth-service:
     build:
       context: ./services/auth
+      dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "8001:8000" # Exposing auth service on host port 8001, container port 8000
+    volumes:
+      - ./services/auth/app:/app/app # Mount app code for live reload
+    env_file:
+      - ./services/auth/.env.example # Load env vars from its own example file
+    environment:
+      # Override or add specific dev environment variables here if needed
+      # Example: DATABASE_URL will be taken from .env.example or can be overridden
+      # Forcing reload for uvicorn in dev
+      - WATCHFILES_FORCE_POLLING=true
     depends_on:
-      - postgres
+      - postgres_auth
+      - redis
+    networks:
+      - hrms_network
 
-  attendance:
-    build:
-      context: ./services/attendance
+  # PostgreSQL for Auth Service
+  postgres_auth:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_auth_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: auth_user # Should match .env.example for auth-service
+      POSTGRES_PASSWORD: auth_password # Should match .env.example for auth-service
+      POSTGRES_DB: auth_db # Should match .env.example for auth-service
     ports:
-      - "8001:8000"
-    depends_on:
-      - postgres
+      - "54321:5432" # Expose on host port 54321 to avoid conflict if local PG is running
+    networks:
+      - hrms_network
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "63791:6379" # Expose on host port 63791
+    volumes:
+      - redis_data:/data
+    networks:
+      - hrms_network
+
+  # Web Client (React - Vite Dev Server)
+  # This setup assumes you'll run `npm install` and `npm run dev` inside the container
+  # or have a Dockerfile that does this.
+  web-client:
+    build:
+      context: ./web-client
+      dockerfile: Dockerfile # Assumes Dockerfile is set up for dev
+                             # For Vite, this usually means exposing port 5173
+    ports:
+      - "5173:5173" # Default Vite dev port
+    volumes:
+      - ./web-client:/app # Mount entire web-client directory
+      - /app/node_modules # Anonymous volume to prevent host node_modules from overwriting container's
+    env_file:
+      - ./web-client/.env.example
+    environment:
+      - CHOKIDAR_USEPOLLING=true # For HMR in Docker
+      - WDS_SOCKET_PORT=0 # For Webpack Dev Server, Vite might not need this explicitly
+    networks:
+      - hrms_network
+    # command: npm run dev # If your Dockerfile doesn't start the dev server
 
 volumes:
-  postgres_data:
+  postgres_auth_data:
+  redis_data:
+
+networks:
+  hrms_network:
+    driver: bridge
