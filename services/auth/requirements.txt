@@ -1,0 +1,10 @@
+fastapi==0.100.0 # Or latest stable
+uvicorn[standard]==0.23.2
+sqlalchemy==2.0.20 # Or latest stable for SQLAlchemy 2.x
+psycopg2-binary==2.9.7 # For PostgreSQL
+pydantic[email]==1.10.12 # For Pydantic v1. If using v2, it would be pydantic>=2.0
+python-jose[cryptography]==3.3.0 # For JWT
+passlib[bcrypt]==1.7.4 # For password hashing
+python-multipart==0.0.6 # For form data (e.g. file uploads, though not used in auth directly yet)
+# alembic # For DB migrations, will add later
+# loguru # For logging, will add later

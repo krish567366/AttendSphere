@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # Production services will be defined here
+  # Example:
+  # auth-service:
+  #   build:
+  #     context: ./services/auth
+  #     dockerfile: Dockerfile # Ensure this Dockerfile is optimized for production
+  #   env_file:
+  #     - .env.prod # Separate production environment variables
+  #   depends_on:
+  #     - postgres_auth_prod
+  #   networks:
+  #     - hrms_network_prod
+
+  # postgres_auth_prod:
+  #   image: postgres:15-alpine
+  #   volumes:
+  #     - postgres_auth_data_prod:/var/lib/postgresql/data
+  #   environment: # Load from secrets management in production
+  #     POSTGRES_USER: ${POSTGRES_USER_PROD}
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_PROD}
+  #     POSTGRES_DB: ${POSTGRES_DB_PROD}
+  #   networks:
+  #     - hrms_network_prod
+
+# volumes:
+#   postgres_auth_data_prod:
+
+# networks:
+#   hrms_network_prod:
+#     driver: bridge
