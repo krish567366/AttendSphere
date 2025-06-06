@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: hrms
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  auth:
+    build:
+      context: ./services/auth
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+
+  attendance:
+    build:
+      context: ./services/attendance
+    ports:
+      - "8001:8000"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
